@@ -4,12 +4,11 @@ setup(
     name="autocnv",
     version="0.1.0",
     packages=find_packages(),
+    package_data={
+        'autocnv': ['data/*.gz', 'data/*.tbi', 'data/*.csv'],  # 根据实际数据库文件类型调整
+    },
     install_requires=[
-        # 您可能需要添加项目的依赖包
-        'pandas~=1.2.5',
-        'pyfaidx',
-        'pysam~=0.16.0.1',
-        'gtfparse~=1.2.1',
+        # 依赖包自行安装
     ],
     entry_points={
         'console_scripts': [
