@@ -38,3 +38,7 @@ please refer to the test cases.
     year = {2021}
 }
 ```
+
+### 注意
+
+原repo没有提示cnv-syndrome-del.bed.gz和cnv-syndrome-dup.bed.gz是怎么获得的，这里建立了空的文件让流程能运行。
