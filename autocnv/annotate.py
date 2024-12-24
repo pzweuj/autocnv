@@ -1,11 +1,10 @@
 import re
-
 from autocnv.database import DataBase
 from pysam import VariantFile
 from autocnv import settings
 from autopvs1.cnv import CNVRecord, PVS1CNV
 from autopvs1.utils import get_transcript
-from autopvs1.read_data import transcripts
+from autopvs1.read_data import load_config
 from autopvs1.strength import Strength
 from collections import defaultdict
 from itertools import chain
@@ -37,20 +36,20 @@ PATHOGENICITY_LEVELS = [
 
 
 class AnnotateHelper:
-    def __init__(self):
+    transcripts = None
+    config_path = None
+    def __init__(self, config_path=None):
         self._gene_database = DataBase(settings.GENE_DATABASE)
         self._omim_gene_database = DataBase(settings.OMIM_GENE_DATABASE)
         self._func_region_database = DataBase(settings.FUNC_REGION_DATABASE)
         self._hi_gene_database = DataBase(settings.HI_GENE_DATABASE)
         self._hi_exon_database = DataBase(settings.HI_EXON_DATABASE)
         self._hi_cds_database = DataBase(settings.HI_CDS_DATABASE)
-        self._clinvar_pathogenic_database = VariantFile(
-            settings.CLINVAR_PATHOGENIC_DATABASE)
+        self._clinvar_pathogenic_database = VariantFile(settings.CLINVAR_PATHOGENIC_DATABASE)
         self._uhi_gene_database = DataBase(settings.UHI_GENE_DATABASE)
         self._hi_region_database = DataBase(settings.HI_REGION_DATABASE)
         self._uhi_region_database = DataBase(settings.UHI_REGION_DATABASE)
-        self._decipher_gene_database = DataBase(
-            settings.DECIPHER_GENE_DATABASE)
+        self._decipher_gene_database = DataBase(settings.DECIPHER_GENE_DATABASE)
         self._ts_gene_database = DataBase(settings.TS_GENE_DATABASE)
         self._ts_region_database = DataBase(settings.TS_REGION_DATABASE)
         self._uts_gene_database = DataBase(settings.UTS_GENE_DATABASE)
@@ -66,6 +65,12 @@ class AnnotateHelper:
 
         self.serializer = self._serializer # func compatible
 
+        # 读取配置文件
+        self.config_dict = config_path
+        config_dict = load_config(config_path)
+        AnnotateHelper.transcripts = config_dict["transcripts_hg19"] # autocnv仅适用于hg19
+        AnnotateHelper.config_path = config_path
+        
     @staticmethod
     def _chrom_num(chrom):
         return re.sub('chr', '', str(chrom), flags=re.I)
@@ -147,8 +152,8 @@ class AnnotateHelper:
                     annotation['chromosome'], annotation['inner_start'],
                     annotation['inner_end'], annotation['func']
                 )
-                tx = get_transcript(gene.transcript, transcripts)
-                pvs1 = PVS1CNV(cnv, None, tx)
+                tx = get_transcript(gene.transcript, AnnotateHelper.transcripts)
+                pvs1 = PVS1CNV(cnv, None, tx, AnnotateHelper.config_path)
                 loss['2E'] = True
                 # loss[PVS1[pvs1.verify_DEL()[0]]] = True
                 try:  # HOTFIX: pvs1 error
@@ -279,8 +284,8 @@ class AnnotateHelper:
                     annotation['chromosome'], annotation['inner_start'],
                     annotation['inner_end'], annotation['func']
                 )
-                tx = get_transcript(gene.transcript, transcripts)
-                pvs1 = PVS1CNV(cnv, None, tx)
+                tx = get_transcript(gene.transcript, AnnotateHelper.transcripts)
+                pvs1 = PVS1CNV(cnv, None, tx, AnnotateHelper.config_path)
                 gain['2I'] = True
                 # gain[PVS1[pvs1.verify_DUP()[0]]] = True
                 gain['pvs1'] = PVS1[pvs1.verify_DUP()[0]]
