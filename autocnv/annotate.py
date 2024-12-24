@@ -595,7 +595,7 @@ class AnnotateHelper:
 
     def _seri_anno(self, seri: pd.Series) -> pd.Series:
         anno_result = self.annotate(**seri.rename(NAME_MAP).to_dict())
-        return seri.append(
+        return seri._append(
             pd.Series(self._serializer(anno_result)).replace('', '-').fillna(DEFAULT_EMPTY_VALUE))
 
     def annotation_file(self, file_path, result_path, col_map=None, cnv_map=None):
